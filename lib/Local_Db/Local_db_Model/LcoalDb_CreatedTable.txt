@@ -1,0 +1,57 @@
+//----------GTUnits-------------
+ db.execute('CREATE TABLE GTUnits(Local_id INTEGER PRIMARY KEY, id INTEGER, description TEXT, nos INTEGER)');
+
+ //----------MobLedgerheads-------------
+    db.execute('CREATE TABLE MobLedgerheads(Local_id INTEGER PRIMARY KEY, id INTEGER, lhName TEXT, lhGroupId INTEGER)');
+
+   //----------GodownMaster-------------
+    db.execute('CREATE TABLE GodownMaster( Local_id INTEGER PRIMARY KEY, gdnId INTEGER, gdnDescription TEXT, gdnInCharge INTEGER, gdnContactNumber TEXT, gdnAddress TEXT, gdnUserId INTEGER, gdnBranchId INTEGER)');
+
+  //----------ItemMaster-------------
+    db.execute('CREATE TABLE ItemMaster(Local_id INTEGER PRIMARY KEY, id INTEGER, itmName TEXT, itmTaxId INTEGER,'
+        'itmUnitId INTEGER, itmHsn TEXT, itmSalesRate DOUBLE, itmMrp DOUBLE, itmPurchaseRate DOUBLE,itmTaxInclusive BOOLEAN,'
+        'txPercentage DOUBLE, atPercentage DOUBLE, txCgstPercentage DOUBLE, txSgstPercentage DOUBLE, txIgstpercentage DOUBLE,itmBarCode TEXT)');
+
+
+
+ //----------salesHeader-------------
+    db.execute('CREATE TABLE salesHeader(Id INTIEGER PRIMARY KEY ,VoucherNo  INT, VoucherDate  NUMERIC,'
+           'OrderHeadId  INT,OrderDate NUMERIC,ExpDate  NUMERIC,LedgerID NUMERIC, PartyName TEXT,'
+           'Address1 TEXT,Address2 TEXT,GstNo  TEXT,Phone  TEXT,ShipToName TEXT,ShipToAddress1  TEXT,'
+           'ShipToAddress2  TEXT, ShipToPhone TEXT, Narration TEXT,Amount REAL,OtherAmt  REAL,'
+           'DiscountAmt  REAL,CreditPeriod  REAL,PaymentCondition REAL,PaymentType  REAL,InvoiceType  TEXT,'
+           'InvoicePrefix  TEXT,InvoiceSuffix  TEXT,CancelFlg  TEXT,EntryDate  NUMERIC,SlesManID  INT,'
+           'BranchUpdated  TEXT,UserId REAL,BranchId  INT,SaleTypeInterState TEXT ,cancelRemarks  TEXT,cancelUserId  INT,'
+           'adlDiscPercent REAL,adlDiscAmount  REAL,adjustAmount  REAL,cashReceived  REAL,balanceAmount  REAL,'
+           'otherAmountReceived  REAL, tokenNo  REAL,deliveryType  TEXT,deliveryTo  TEXT,orderstatus  TEXT,'
+           'orderType  TEXT,Tax_amt REAL, WiFi  TEXT,Round_Off  REAL)');
+
+
+
+
+
+
+           //----------salesDetails-------------
+      db.execute('CREATE TABLE salesDetails(Id	INTEGER PRIMARY KEY, '
+          'qty	NUMERIC, rate	NUMERIC,itemId NUMERIC, disPercentage	NUMERIC, itmName TEXT,cgstPercentage	NUMERIC, sgstPercentage	NUMERIC,cessPercentage	NUMERIC,'
+          'discountAmount	NUMERIC,cgstAmount	NUMERIC,sgstAmount	NUMERIC,cessAmount	NUMERIC,igstPercentage	NUMERIC,igstAmount	NUMERIC,'
+              'taxPercentage	NUMERIC,taxAmount	NUMERIC,taxInclusive	TEXT,amountBeforeTax	NUMERIC,amountIncludingTax	NUMERIC,netTotal	NUMERIC,'
+              'hsncode	TEXT,gdnId	INT,taxId	INT,rackId	INT,addTaxId	INT,unitId	INT,stockId	REAL,batchNo	TEXT,expiryDate	REAL, notes	TEXT,'
+              'barcode	TEXT,nosInUnit	NUMERIC,adlDiscPercent	NUMERIC,adlDiscAmount	NUMERIC,itemSlNo	INT,Mrp	NUMERIC,Prate	NUMERIC,salesManIdDet	INT,'
+              'SHID INTEGER,'
+              'FOREIGN KEY(SHID) REFERENCES salesHeader(Id))'
+      );
+
+
+      //---------------------GTCompanyMaster---------------------
+
+         db.execute('CREATE TABLE GTCompanyMaster(id INTEGER PRIMARY KEY,companyProfileName TEXT,'
+              'companyProfileShortName TEXT, companyProfileMailingName TEXT,companyProfileAddress1 TEXT,'
+              'companyProfileAddress2 TEXT, companyProfileAddress3 TEXT,companyProfileGstNo TEXT,'
+              ' companyProfilePan TEXT, companyProfileMobile TEXT,companyProfileContact TEXT,companyProfileEmail TEXT,'
+              'companyProfileWeb TEXT,companyProfileBankName TEXT,companyProfileAccountNo TEXT,companyProfileBranch TEXT,'
+              'companyProfileIfsc TEXT,companyProfileImagePath TEXT,companyProfileIsPrintHead TEXT,companyProfileStateId INTEGER,'
+              ' companyProfileLedgerId INTEGER, companyProfilePin TEXT,companyProfileNameLatin TEXT, buildingNo TEXT,'
+              ' buildingNoLatin TEXT, streetName TEXT,streetNameLatin TEXT, district TEXT, districtLatin TEXT, city TEXT,'
+              'cityLatin TEXT,country TEXT,countryLatin TEXT,pinNo TEXT,pinNoLatin TEXT,companyProfileLedger TEXT,'
+              'companyProfileState TEXT,  )');

@@ -1,0 +1,645 @@
+
+
+import 'dart:convert';
+import 'dart:ui';
+import 'package:flutter_app/AQizo_RMS/New_Delivery_App/Del_Model/Del_Model_AddonItms.dart';
+import 'package:flutter_app/GT_Masters/AppTheam.dart';
+import 'package:flutter_app/urlEnvironment/urlEnvironment.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
+import 'package:http/http.dart' as http;
+import 'package:flutter/gestures.dart';
+import 'package:flutter/material.dart';
+
+
+
+
+class ItemAddon{
+
+  static List<Del_AddonItems> _Del_Addons =  new List<Del_AddonItems>();
+
+  Del_AddonItems Del_AddonDatas;
+  AppTheam theam =AppTheam();
+
+  TextEditingController ItemNotesController =new TextEditingController();
+
+  var ItemNotes_Id = null;
+// var   AddonData=[];
+
+
+// [
+//   {"name":"pepsi","Rate":"40"},
+//   {"name":"FrechFries","Rate":"30"},
+//   {"name":"meals","Rate":"50"},
+//   ];
+
+
+bool ShowAddon=false;
+int Item_qty=1;
+int Addon_qty=1;
+bool ShowAddonSelcted=false;
+  var selectedIndexes = [];
+bool AddToCart=false;
+var Selected_AddonDatas=[];
+var SelectedUOM=null;
+var tappedIndex=null;
+bool _isDining=true;
+
+// var qtyarray=[{"qty":1},{"qty":1,},{"qty":1,}];
+
+initialFuntion(context,List<dynamic> UomData,itemname,itm_id,image,token,BillingNote)async{
+
+
+
+
+   ShowAddon=false;
+   Item_qty=1;
+   ShowAddonSelcted=false;
+   AddToCart=false;
+   selectedIndexes=[];
+  Selected_AddonDatas=[];
+   SelectedUOM=null;
+   tappedIndex=null;
+  _Del_Addons.clear();
+   ItemNotesController.text="";
+   ItemNotes_Id=null;
+   // qtyarray=[{"qty":1},{"qty":1,},{"qty":1,}];
+   var s=await GetItemAddons(token,itm_id);
+  await AddItemPopup(context, UomData,itemname,image,BillingNote);
+  if(AddToCart==true && SelectedUOM!=null){
+
+    // print(json.encode(_Del_Addons));
+    // Selected_AddonDatas.add(_Del_Addons.)
+
+    _Del_Addons.forEach((element) {
+
+      if(element.qty>0){
+        Selected_AddonDatas.add(element);
+      }
+
+    });
+
+
+    return [{"data":SelectedUOM,"Qty":Item_qty,"AddonData":Selected_AddonDatas,
+      // "Cust_Ph":Ph_NumberController.text,"Address":Address_Controller.text
+    }];
+  }
+  return null;
+
+
+}
+
+
+
+GetItemAddons(token,id)async{
+
+  final res = await http.get("${Env.baseUrl}RelitemAddons/$id/1", headers: {
+    "Authorization": token,
+  });
+
+  print("res");
+  print(res.body);
+  print(res.statusCode);
+
+if(res.statusCode==200){
+
+  var resAddon=json.decode(res.body);
+
+  if(resAddon["relItemAddOn"].toString()=="[]"){
+
+    print("No add on items");
+  }else{
+
+    print(resAddon["relItemAddOn"]);
+    var s=[];
+    s=resAddon["relItemAddOn"];
+    print(s.length);
+
+
+for(int i=0;i<s.length;i++) {
+  print(s[i]["itemName"]);
+  Del_AddonDatas = Del_AddonItems(
+
+      id: s[i]["id"],
+      itemName: s[i]["itemName"],
+      mainItemId: s[i]["mainItemId"],
+      addOnitemId: s[i]["addOnitemId"],
+      addonItemName: s[i]["addonItemName"],
+      isActive: s[i]["isActive"],
+      qty: 0
+  );
+
+
+  print("addo on datas");
+  _Del_Addons.add(Del_AddonDatas);
+}
+
+print(_Del_Addons);
+
+  }
+
+}
+}
+
+
+
+
+
+
+ AddItemPopup(context,List<dynamic> UomData,itemname,image,BillingNote){
+   return  showDialog(
+     context: context,
+     builder: (context) {
+       return StatefulBuilder(
+         builder: (context, setState) {
+           return AlertDialog(
+             title:  Text(itemname),
+            // backgroundColor: Colors.pink.shade100,
+             actions: [
+               Column(
+                 children: [
+
+                   Row(
+                     children: [
+
+                       Column(
+                         children: [
+                           SizedBox(
+                             child:image.toString()=="null"?
+                             Image.asset("assets/icon1.jpg"):
+                             Image.network(image)
+                           ),
+SizedBox(height: 20,),
+                           Container(
+                               decoration: BoxDecoration(
+                                   color: Colors.teal,
+                                   borderRadius:BorderRadius.circular(30)
+                               ),
+
+                               width: 120,height: 40,
+                               child:Row(
+                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                 children: [
+
+                                   IconButton(icon: Icon(Icons.remove),
+                                       onPressed: () {   setState((){
+                                         --Item_qty;
+                                         if(Item_qty<1){
+                                           Item_qty=1;
+                                         }
+                                       }); }),
+
+
+                                   Text(Item_qty.toString()),
+
+
+
+
+                                   IconButton(icon: Icon(Icons.add),
+                                       onPressed: () {
+                                         setState((){
+                                           ++Item_qty;
+                                         });
+
+                                       }),
+
+
+
+                                 ],)
+                           ),
+
+
+                         ],
+                       ),
+
+                       ///---------------------------------------------------
+                       SizedBox(width: MediaQuery.of(context).size.width/2.5-100,
+                         child: Column(
+                           children: [
+
+
+
+
+
+                              UomData.length == 0
+                                  ? Padding(
+                                      padding: const EdgeInsets.only(top: 10, bottom: 10),
+                                      child: Text(
+                                        "UOM Not Found..!",
+                                        style: TextStyle(
+                                          color: Colors.red,
+                                          fontSize: 20,
+                                        ),
+                                      ))
+                                  : SizedBox(height: 250,width: 200,
+  child:   ListView.builder(
+shrinkWrap: true,
+    itemCount: UomData.length,
+
+
+
+
+    itemBuilder: (context, index) =>
+
+        UomButtons(setState,index,UomData[index],UomData[index]["description"],UomData[index]["mrp"]),
+
+
+
+
+
+    ),
+),
+
+                           ],
+                         ),
+                       ),
+
+
+
+
+                       ///---------------------------------------------------
+
+                       Visibility(
+                         visible:_Del_Addons.length>0 ,
+                         child: SizedBox(
+                           width:ShowAddon==true?
+                           MediaQuery.of(context).size.width/2.5-100:50,
+                          child:Column(
+                            mainAxisAlignment:MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+
+                            IconButton(icon: Icon(ShowAddon==true?
+                            Icons.indeterminate_check_box_outlined
+                                :
+                            Icons.add_box_outlined
+                            ), onPressed: (){
+                              setState((){
+                                ShowAddon=!ShowAddon;
+                                print("ShowAddon");
+                                print(ShowAddon);
+                              });
+                            }),
+
+
+                                Visibility(
+                                    visible: ShowAddon==true,
+                                    child:SizedBox(
+                                      height: 200,
+                                      child: ListView.builder(
+                                        shrinkWrap: true,
+                                        itemCount:_Del_Addons.length ,
+                                        itemBuilder:(context, index) =>
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: [
+
+                                            Checkbox(
+                                                value: selectedIndexes .contains(index),
+                                         onChanged: (_) {
+                                                  setState((){
+                                                    Selected_AddonDatas.clear();
+
+                                         if (selectedIndexes.contains(index)) {
+                                           selectedIndexes.remove(index);   // unselect
+                                             } else {
+                                             selectedIndexes.add(index);// select
+                                             _Del_Addons[index].qty=1;
+                                                 }
+
+                                         // selectedIndexes.forEach((element) {
+                                         //
+                                         //  print(_Del_Addons[element].addonItemName) ;
+                                         //  Selected_AddonDatas.add(_Del_Addons[element]);
+                                         // });
+
+
+                                       });
+                                                  print("Selected_AddonDatas");
+                                                  print(Selected_AddonDatas);
+                                                },
+
+                                            ),
+                                            Expanded(child: Text(_Del_Addons[index].addonItemName)),
+                                            Expanded(child: Text("₹ ${
+                                                          _Del_Addons[index]
+                                                                      .addonRate ==
+                                                                  null
+                                                              ? "0"
+                                                              : _Del_Addons[
+                                                                      index]
+                                                                  .addonRate
+                                                                  .toString()
+                                                        }")),
+
+
+                                            selectedIndexes.contains(index)?Add_Qty_Counter(setState, index,1):
+                                                SizedBox(
+                                                  height: 30,
+                                                  width: 0,
+                                                   ),
+
+                                            // Visibility(
+                                            //   visible: selectedIndexes.contains(index),
+                                            //   child: Add_Qty_Counter(setState, index,1),
+                                            // ),
+
+                                          ],
+                                        ),),
+                                    )),
+
+           ] )
+                         ),
+                       ),
+
+
+                     ],
+                   ),
+
+
+
+                   ///------------------------------Notes--------------------------
+
+
+
+                   Row(children: [
+                     SizedBox(width: MediaQuery.of(context).size.width/2,
+                       child: Row(
+                         children: [
+                           Expanded(
+                             child: TypeAheadField(
+                                 suggestionsBoxVerticalOffset: 50,
+
+                                 direction:AxisDirection.up,
+                                 textFieldConfiguration: TextFieldConfiguration(
+                                     style: TextStyle(),
+                                     controller: ItemNotesController,
+                                     decoration: InputDecoration(
+                                       errorStyle: TextStyle(color: Colors.red),
+                                       // errorText: itemSelect
+                                       //     ? "Please Select product Item ?"
+                                       //     : null,
+                                       suffixIcon: IconButton(
+                                         icon: Icon(Icons.remove_circle),
+                                         color: Colors.blue,
+                                         onPressed: () {
+                                           setState(() {
+                                             print("cleared");
+                                             ItemNotesController.text = "";
+                                             ItemNotes_Id = null;
+
+                                           });
+                                         },
+                                       ),
+
+
+
+                                       isDense: true,
+                                       contentPadding:
+                                       EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+                                       border: OutlineInputBorder(
+                                           borderRadius: BorderRadius.circular(10)),
+                                       // i need very low size height
+                                       labelText:
+                                       'Item Notes', // i need to decrease height
+                                     )),
+                                 suggestionsBoxDecoration:
+                                 SuggestionsBoxDecoration(elevation: 90.0),
+                                 suggestionsCallback: (pattern) {
+                                   return BillingNote.where((user) =>
+                                       user["notes"].toString().trim().toLowerCase().contains(pattern.trim().toLowerCase()));
+                                 },
+                                 itemBuilder: (context, suggestion) {
+                                   return Card(elevation: 0,
+                                     color: Colors.blue,
+                                     // shadowColor: Colors.blue,
+                                     child: ListTile(
+                                       tileColor: theam.DropDownClr,
+                                       title: Text(
+                                         suggestion["notes"],
+                                         style: TextStyle(color: Colors.white),
+                                       ),
+                                     ),
+                                   );
+                                 },
+                                 onSuggestionSelected: (suggestion) {
+                                   print(suggestion["notes"]);
+                                   print("selected");
+                                   ItemNotesController.text=suggestion["notes"];
+                                   //  print(salesItemId);
+                                   print("...........");
+
+                                 },
+                                 errorBuilder: (BuildContext context, Object error) =>
+                                     Text('$error',
+                                         style: TextStyle(
+                                             color: Theme.of(context).errorColor)),
+                                 transitionBuilder:
+                                     (context, suggestionsBox, animationController) =>
+                                     FadeTransition(
+                                       child: suggestionsBox,
+                                       opacity: CurvedAnimation(
+                                           parent: animationController,
+                                           curve: Curves.elasticIn),
+                                     )),
+                           ),
+
+
+
+                         ],
+                       ),
+                     ),
+
+
+SizedBox(width: 10,),
+
+                     ElevatedButton(
+                         child: Text("Add",style: TextStyle(color: Colors.black,fontSize: 20),),
+                         onPressed:(){
+
+                           if (SelectedUOM == null) {
+                             showDialog(
+                                 context: context,
+                                 builder: (context) {
+                                   return StatefulBuilder(
+                                       builder: (context, setState) {
+                                         return AlertDialog(actions: [
+                                           Container(
+                                             height: 30,
+                                             width: 300,
+                                             child: Center(
+                                                 child: Text(
+                                                   "UOM is Undefined..!",
+                                                   style: TextStyle(
+                                                       color: Colors.red,
+                                                       fontSize: 20),
+                                                 )),
+                                           )
+                                         ]);
+                                       });
+                                 });
+                             return;
+                           }else{
+
+                             setState((){
+                               AddToCart=true;
+                               print("oipio");
+                               Navigator.of(context).pop();
+                             });
+
+                           }
+
+                         }),
+
+
+                   ],)
+
+
+
+
+                 ],
+               ),
+             ],
+           );
+         },
+       );
+     },
+   );
+
+ }
+
+
+
+
+
+
+ Container Add_Qty_Counter(StateSetter setState, int index,qty) {
+
+
+    return Container(
+      color: Colors.teal,
+        // decoration: BoxDecoration(
+        //     color: Colors.teal, borderRadius: BorderRadius.circular(30)),
+        width: 70,
+        height: 30,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+           InkWell(
+               onTap: (){
+                 setState(() {
+                   if (selectedIndexes.contains(index)) {
+                     var s=_Del_Addons[index].qty;
+
+                     _Del_Addons[index].qty= --s;
+
+                     print("qty");
+                     print(_Del_Addons[index].qty.toString());
+                     --qty;
+                     if (_Del_Addons[index].qty < 1) {
+                       _Del_Addons[index].qty = 1;
+                     } // unselect
+                   }
+                 });
+               },
+               child
+                    : Icon(Icons.remove,color:  Colors.white,)),
+
+            Text(_Del_Addons[index].qty.toString(),style: TextStyle(color: Colors.white),),
+
+
+
+            InkWell(
+
+              child:  Icon(Icons.add,color: Colors.white),
+                 onTap: (){
+                   if (selectedIndexes.contains(index)) {
+                     setState(() {
+                       var s=_Del_Addons[index].qty;
+
+                       _Del_Addons[index].qty=s==null?0:++s;
+                       // ++Item_qty;
+                       print("uiooui");
+                       // print(qtyarray[index]["qty"].toString());
+                       //
+                       //
+                       // print("qtyarray before");
+                       // print(qtyarray);
+                       // // qtyarray.removeAt(index);
+                       // // qtyarray.insert(index, {"qty": 2});
+                       //  print("qtyarray after ");
+                       //  print(qtyarray);
+//
+                       // ++qty;
+                       // print("oipoi");
+                       // print(qty.toString());
+                     });
+                   }},
+
+
+            ),
+          ],
+        ));
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  Widget UomButtons(setState,index,Uom,UomName,rate){
+
+   return Padding(
+     padding: const EdgeInsets.all(5.0),
+     child: InkWell(
+       onTap: (){
+         print("Selected UOM");
+         print(Uom);
+      // var s= List<dynamic>.filled(1, Uom);
+         SelectedUOM=Uom;
+         print(SelectedUOM);
+         print(SelectedUOM.runtimeType);
+         setState((){
+           tappedIndex=index;
+         });
+
+       },
+       child: Container(
+         decoration: BoxDecoration(
+             color:tappedIndex == index ? Colors.blue :Colors.teal,
+             borderRadius:BorderRadius.circular(20)
+         ),
+
+         width: 100,height: 50,
+         child:Center(child: RichText( text: TextSpan(
+           children:<TextSpan>[
+             TextSpan(text: UomName, style: TextStyle(fontSize: 17,color: Colors.black)),
+             TextSpan(text: "      Rs."),
+             TextSpan(text:rate.toString(),style: TextStyle(fontWeight: FontWeight.bold,fontSize: 17)),
+           ],
+         ),)),
+       ),
+     ),
+   );
+
+
+ }
+
+
+
+
+
+
+}
